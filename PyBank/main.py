@@ -5,6 +5,13 @@ import csv
 #for calculations between months
 import numpy as np
 
+changes=[]
+month_count=0
+max_change=0
+max_month=""
+min_change=0
+min_month=""
+
 #open file and read
 with open("Resources/budget_data.csv") as csvfile:
 
@@ -23,52 +30,41 @@ with open("Resources/budget_data.csv") as csvfile:
         months=row[0]
         profits=int(row[1])
         total_months.append(months)
+        month_count=month_count+1
         total_profits.append(profits)
-   
-#define functions to be used
-def max(array,n):
-    max=array[0]
-
-    for i in range(1,n):
-        if array[i]>max:
-            max=array[i]
-    return max
-
-def min(array,n):
-    min=array[0]
-
-    for i in range(1,n):
-        if array[i]<min:
-            min=array[i]
-    return min
-
-
-#calculate profit and loss
-n=len(total_profits)
-largest_profit=max(total_profits,n)
-largest_loss=min(total_profits,n)
-
-if row[1]==str(largest_profit):
-   profit_month=row[0]
-if row[1]==str(largest_loss):
-    loss_month=row[0]
-
+        if month_count>1:
+            change=profits-previous
+            changes.append(change)
+            if change>max_change:
+                max_change=change
+                max_month=months
+            if change<min_change:
+                min_change=change
+                min_month=months
+        previous=profits
 
 #monthly changes
-monthly_changes=np.diff(total_profits)
 
-average=sum(monthly_changes)/len(monthly_changes)
+average=sum(changes)/len(changes)
 average_change=format(average,'.2f')
 
-m=len(monthly_changes)
-greatest_increase=max(monthly_changes,m)
-greatest_loss=min(monthly_changes,m)
 
 #print table
 print("Financial Analysis")
 print("----------------------------")
-print("Total Months:"+str(len(total_months)))
+print("Total Months:"+str(month_count))
 print("Total: $"+str(sum(total_profits)))
 print("Average Change: $"+str(average_change))
-print("Greatest Increase in Profits:"+str(profit_month)+"($"+str(greatest_increase)+")")
-print("Greatest Decrease in Profits:"+str(loss_month)+"($"+str(greatest_loss)+")")
+print("Greatest Increase in Profits:"+str(max_month)+"($"+str(max_change)+")")
+print("Greatest Decrease in Profits:"+str(min_month)+"($"+str(min_change)+")")
+
+#write and export text file
+bank_file=open("analysis/analysis.text","w")
+bank_file.write("Financial Analysis")
+bank_file.write("----------------------------")
+bank_file.write("Total Months:"+str(month_count))
+bank_file.write("Total: $"+str(sum(total_profits)))
+bank_file.write("Average Change: $"+str(average_change))
+bank_file.write("Greatest Increase in Profits:"+str(max_month)+"($"+str(max_change)+")")
+bank_file.write("Greatest Decrease in Profits:"+str(min_month)+"($"+str(min_change)+")")
+bank_file.close()
